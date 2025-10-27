@@ -6,7 +6,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model Sample {
@@ -16,4 +15,206 @@ model Sample {
   updatedAt DateTime @updatedAt
 
   @@map("samples")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  password       String
+  name           String
+  profilePicture String?
+  role           Role            @default(CUSTOMER)
+  referralCode   String          @unique
+  referredById   String?
+  referredBy     User?           @relation("Referrals", fields: [referredById], references: [id])
+  referrals      User[]          @relation("Referrals")
+  points         Point[]
+  events         Event[]         @relation("OrganizedEvents")
+  transactions   Transaction[]
+  reviews        Review[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  EventAttendee  EventAttendee[]
+
+  @@map("users")
+}
+
+enum Role {
+  CUSTOMER
+  ORGANIZER
+}
+
+model Event {
+  id             String          @id @default(cuid())
+  title          String
+  description    String
+  category       String
+  location       String
+  startDate      DateTime
+  endDate        DateTime
+  price          Int             @default(0)
+  totalSeats     Int
+  availableSeats Int
+  organizerId    String
+  organizer      User            @relation("OrganizedEvents", fields: [organizerId], references: [id])
+  ticketTypes    TicketType[]
+  vouchers       Voucher[]
+  transactions   Transaction[]
+  reviews        Review[]
+  attendees      EventAttendee[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+
+  @@map("events")
+}
+
+model TicketType {
+  id              String            @id @default(cuid())
+  name            String
+  price           Int
+  eventId         String
+  event           Event             @relation(fields: [eventId], references: [id])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+  TransactionItem TransactionItem[]
+
+  @@map("ticket_types")
+}
+
+model Transaction {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id])
+  eventId        String
+  event          Event             @relation(fields: [eventId], references: [id])
+  totalAmount    Int
+  discountAmount Int               @default(0)
+  finalAmount    Int
+  status         TransactionStatus @default(WAITING_PAYMENT)
+  paymentProof   PaymentProof?
+  usedPoints     Int               @default(0)
+  usedCouponId   String?
+  usedVoucherId  String?
+  usedVoucher    Voucher           @relation(fields: [voucherId], references: [id])
+  expiresAt      DateTime
+  canceledAt     DateTime?
+  confirmedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  items          TransactionItem[]
+  voucherId      String
+
+  @@map("transactions")
+}
+
+enum TransactionStatus {
+  WAITING_PAYMENT
+  WAITING_CONFIRMATION
+  DONE
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+model TransactionItem {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  ticketTypeId  String?
+  ticketType    TicketType? @relation(fields: [ticketTypeId], references: [id])
+  quantity      Int
+  price         Int
+
+  @@map("transaction_items")
+}
+
+model PaymentProof {
+  id            String      @id @default(cuid())
+  imageUrl      String
+  uploadedAt    DateTime    @default(now())
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  @@map("payment_proofs")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("reviews")
+}
+
+model Point {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("points")
+}
+
+model Voucher {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  discountPct Float
+  eventId     String
+  event       Event         @relation(fields: [eventId], references: [id])
+  expiresAt   DateTime
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  Transaction Transaction[]
+
+  @@map("vouchers")
+}
+
+model EventAttendee {
+  id          String @id @default(cuid())
+  eventId     String
+  event       Event  @relation(fields: [eventId], references: [id])
+  userId      String
+  user        User   @relation(fields: [userId], references: [id])
+  ticketCount Int
+  totalPaid   Int
+
+  @@map("event_attendees")
+}
+
+model NotificationEmail {
+  id      String   @id @default(cuid())
+  toEmail String
+  subject String
+  body    String
+  sentAt  DateTime @default(now())
+
+  @@map("notification_emails")
+}
+
+enum Location {
+  JAKARTA
+  BANDUNG
+  BALI
+  MEDAN
+  MAKASSAR
+  PADANG
+}
+
+enum Category {
+  MUSIC
+  ART
+  FOOD
+  HOBBIES
+  SPORTS
+  COMEDY
 }

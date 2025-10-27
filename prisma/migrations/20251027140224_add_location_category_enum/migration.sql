@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "Location" AS ENUM ('JAKARTA', 'BANDUNG', 'BALI', 'MEDAN', 'MAKASSAR', 'PADANG');
+
+-- CreateEnum
+CREATE TYPE "Category" AS ENUM ('MUSIC', 'ART', 'FOOD', 'HOBBIES', 'SPORTS', 'COMEDY');
