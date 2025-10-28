@@ -1,4 +1,4 @@
-import Mail from "nodemailer/lib/mailer";
+import { sign } from "jsonwebtoken";
 import { BASE_URL_FE, JWT_SECRET, JWT_SECRET_RESET } from "../../config/env";
 import { ApiError } from "../../utils/api-error";
 import { comparePassword, hashPassword } from "../../utils/password";
@@ -7,7 +7,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { ForgotPasswordDTO } from "./dto/forgot-password.dto";
 import { LoginDTO } from "./dto/login.dto";
 import { RegisterDTO } from "./dto/register.dto";
-import { sign } from "jsonwebtoken";
+import { randomCodeGenerator } from "../../script/randomCodeGenerator";
 
 export class AuthService {
   private prisma: PrismaService;
@@ -28,9 +28,10 @@ export class AuthService {
     }
 
     const hashedPassword = await hashPassword(body.password);
+    const referralCode = randomCodeGenerator();
 
     await this.prisma.user.create({
-      data: { ...body, password: hashedPassword },
+      data: { ...body, password: hashedPassword, referralCode },
     });
 
     return { message: "register user success" };
