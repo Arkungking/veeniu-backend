@@ -4,6 +4,7 @@ import cors from "cors";
 import { SampleRouter } from "./modules/sample/sample.router";
 import { PORT } from "./config/env";
 import { EventRouter } from "./modules/events/event.router";
+import { VoucherRouter } from "./modules/vouchers/voucher.router";
 
 export class App {
   app: Express;
@@ -23,8 +24,10 @@ export class App {
   private routes() {
     const sampleRouter = new SampleRouter();
     const eventRouter = new EventRouter();
+    const voucherRouter = new VoucherRouter();
     this.app.use("/samples", sampleRouter.getRouter());
     this.app.use("/events", eventRouter.getRouter());
+    this.app.use("/vouchers", voucherRouter.getRouter());
   }
 
   private handleError() {

@@ -168,7 +168,7 @@ model Point {
 model Voucher {
   id          String        @id @default(cuid())
   code        String        @unique
-  discountPct Float
+  value       Int
   eventId     String
   event       Event         @relation(fields: [eventId], references: [id])
   expiresAt   DateTime

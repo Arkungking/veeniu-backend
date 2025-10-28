@@ -37,7 +37,7 @@ export class CreateEventDTO {
   @IsOptional()
   @IsInt()
   @Min(0)
-  price?: number = 0;
+  price!: number;
 
   @IsNotEmpty()
   @IsInt()
