@@ -12,6 +12,10 @@ import { Category, Location } from "../../../generated/prisma";
 export class CreateEventDTO {
   @IsNotEmpty()
   @IsString()
+  id!: string;
+
+  @IsNotEmpty()
+  @IsString()
   title!: string;
 
   @IsNotEmpty()

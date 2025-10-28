@@ -19,8 +19,8 @@ export class EventRouter {
     this.router.get("/organizer", this.orgEventController.getEvents);
     this.router.post("/create", this.orgEventController.createEvent);
     this.router.get("/:id", this.eventController.getEvent);
-    this.router.patch("/:id", this.orgEventController.editEvent);
-    this.router.delete("/delete/:id", this.orgEventController.deleteEvent);
+    this.router.patch("/edit", this.orgEventController.editEvent);
+    this.router.delete("/delete", this.orgEventController.deleteEvent);
   };
 
   getRouter = () => {
