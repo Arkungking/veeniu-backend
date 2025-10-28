@@ -4,6 +4,22 @@ CREATE TYPE "Role" AS ENUM ('CUSTOMER', 'ORGANIZER');
 -- CreateEnum
 CREATE TYPE "TransactionStatus" AS ENUM ('WAITING_PAYMENT', 'WAITING_CONFIRMATION', 'DONE', 'REJECTED', 'EXPIRED', 'CANCELED');
 
+-- CreateEnum
+CREATE TYPE "Location" AS ENUM ('JAKARTA', 'BANDUNG', 'BALI', 'MEDAN', 'MAKASSAR', 'PADANG');
+
+-- CreateEnum
+CREATE TYPE "Category" AS ENUM ('MUSIC', 'ART', 'FOOD', 'HOBBIES', 'SPORTS', 'COMEDY');
+
+-- CreateTable
+CREATE TABLE "samples" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "samples_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,

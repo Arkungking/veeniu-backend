@@ -48,13 +48,14 @@ model Event {
   id             String          @id @default(cuid())
   title          String
   description    String
-  category       String
-  location       String
+  imageUrl       String
+  category       Category        @default(MUSIC)
+  location       Location        @default(JAKARTA)
   startDate      DateTime
   endDate        DateTime
   price          Int             @default(0)
   totalSeats     Int
-  availableSeats Int
+  availableSeats Int?
   organizerId    String
   organizer      User            @relation("OrganizedEvents", fields: [organizerId], references: [id])
   ticketTypes    TicketType[]
