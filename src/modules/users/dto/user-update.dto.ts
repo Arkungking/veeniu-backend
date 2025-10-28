@@ -1,18 +1,15 @@
 import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class UserUpdateDTO {
-  @IsOptional()
   @IsNotEmpty()
+  @IsString()
+  id!: string;
+
+  @IsOptional()
   @IsString()
   name?: string;
 
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
   password?: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsString()
-  profilePicture?: string;
 }
