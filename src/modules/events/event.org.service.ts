@@ -78,14 +78,14 @@ export class OrgEventService {
     };
   };
 
-  editEvent = async (id: string, data: Partial<CreateEventDTO>) => {
+  editEvent = async (data: Partial<CreateEventDTO>) => {
     const event = await this.prisma.event.findFirst({
-      where: { id },
+      where: { id: data.id },
     });
     if (!event) throw new ApiError("event not found", 404);
 
     const updatedEvent = await this.prisma.event.update({
-      where: { id },
+      where: { id: data.id },
       data,
     });
 
