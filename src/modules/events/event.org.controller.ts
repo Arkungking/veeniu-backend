@@ -10,7 +10,7 @@ export class OrgEventController {
   }
 
   getEvents = async (req: Request, res: Response) => {
-    const orgId = req.query.organizerId as string;
+    const orgId = req.body;
     const page = +(req.query.page || 1);
     const limit = +(req.query.limit || 10);
     const search = req.query.search as string;
@@ -33,13 +33,12 @@ export class OrgEventController {
     res.status(200).send(result);
   };
   editEvent = async (req: Request, res: Response) => {
-    const id = req.params.id;
     const data = req.body;
-    const result = await this.orgEventService.editEvent(id, data);
+    const result = await this.orgEventService.editEvent(data);
     res.status(200).send(result);
   };
   deleteEvent = async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id = req.body;
     const result = await this.orgEventService.deleteEvent(id);
     res.status(200).send(result);
   };
