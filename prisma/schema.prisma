@@ -8,15 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Sample {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("samples")
-}
-
 model User {
   id             String          @id @default(cuid())
   email          String          @unique
@@ -28,13 +19,13 @@ model User {
   referredById   String?
   referredBy     User?           @relation("Referrals", fields: [referredById], references: [id])
   referrals      User[]          @relation("Referrals")
-  points         Point[]
+  points         Point[] // relasi ke point user
   events         Event[]         @relation("OrganizedEvents")
   transactions   Transaction[]
   reviews        Review[]
+  EventAttendee  EventAttendee[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
-  EventAttendee  EventAttendee[]
 
   @@map("users")
 }
@@ -96,16 +87,14 @@ model Transaction {
   status         TransactionStatus @default(WAITING_PAYMENT)
   paymentProof   PaymentProof?
   usedPoints     Int               @default(0)
-  usedCouponId   String?
   usedVoucherId  String?
-  usedVoucher    Voucher           @relation(fields: [voucherId], references: [id])
+  usedVoucher    Voucher?          @relation(fields: [usedVoucherId], references: [id])
   expiresAt      DateTime
   canceledAt     DateTime?
   confirmedAt    DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   items          TransactionItem[]
-  voucherId      String
 
   @@map("transactions")
 }
@@ -160,6 +149,7 @@ model Point {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   amount    Int
+  reason    String? // contoh: "Referral Bonus", "Transaction Reward", "Refund", dll
   expiresAt DateTime
   createdAt DateTime @default(now())
 
