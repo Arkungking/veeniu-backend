@@ -1,0 +1,1 @@
+// user can only update or change profile picture, their name, and password
