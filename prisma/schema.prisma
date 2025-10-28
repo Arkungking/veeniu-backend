@@ -142,14 +142,15 @@ model PaymentProof {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  rating    Int
-  comment   String?
-  eventId   String
-  event     Event    @relation(fields: [eventId], references: [id])
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id               String   @id @default(cuid())
+  rating           Int
+  commentEvent     String
+  commentOrganizer String
+  eventId          String
+  event            Event    @relation(fields: [eventId], references: [id])
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now())
 
   @@map("reviews")
 }
