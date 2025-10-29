@@ -49,7 +49,7 @@ model Event {
   availableSeats Int?
   organizerId    String
   organizer      User            @relation("OrganizedEvents", fields: [organizerId], references: [id])
-  ticketTypes    TicketType[]
+  tickets        Ticket[]
   vouchers       Voucher[]
   transactions   Transaction[]
   reviews        Review[]
@@ -61,7 +61,7 @@ model Event {
   @@map("events")
 }
 
-model TicketType {
+model Ticket {
   id              String            @id @default(cuid())
   name            String
   price           Int
@@ -72,7 +72,7 @@ model TicketType {
   deletedAt       DateTime?
   TransactionItem TransactionItem[]
 
-  @@map("ticket_types")
+  @@map("tickets")
 }
 
 model Transaction {
@@ -112,8 +112,8 @@ model TransactionItem {
   id            String      @id @default(cuid())
   transactionId String
   transaction   Transaction @relation(fields: [transactionId], references: [id])
-  ticketTypeId  String?
-  ticketType    TicketType? @relation(fields: [ticketTypeId], references: [id])
+  ticketId      String?
+  tickets       Ticket?     @relation(fields: [ticketId], references: [id])
   quantity      Int
   price         Int
 
