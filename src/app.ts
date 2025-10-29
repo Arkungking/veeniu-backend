@@ -1,10 +1,10 @@
 import express, { Express } from "express";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import cors from "cors";
-import { SampleRouter } from "./modules/sample/sample.router";
 import { PORT } from "./config/env";
 import { EventRouter } from "./modules/events/event.router";
 import { VoucherRouter } from "./modules/vouchers/voucher.router";
+import { AuthRouter } from "./modules/auth/auth.router";
 
 export class App {
   app: Express;
@@ -22,10 +22,10 @@ export class App {
   }
 
   private routes() {
-    const sampleRouter = new SampleRouter();
+    const authRouter = new AuthRouter();
     const eventRouter = new EventRouter();
     const voucherRouter = new VoucherRouter();
-    this.app.use("/samples", sampleRouter.getRouter());
+    this.app.use("/auth", authRouter.getRouter());
     this.app.use("/events", eventRouter.getRouter());
     this.app.use("/vouchers", voucherRouter.getRouter());
   }
