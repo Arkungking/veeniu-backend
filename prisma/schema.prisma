@@ -9,23 +9,24 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  email          String          @unique
-  password       String
-  name           String
-  profilePicture String?
-  role           Role            @default(CUSTOMER)
-  referralCode   String          @unique
-  referredById   String?
-  referredBy     User?           @relation("Referrals", fields: [referredById], references: [id])
-  referrals      User[]          @relation("Referrals")
-  points         Point[] // relasi ke point user
-  events         Event[]         @relation("OrganizedEvents")
-  transactions   Transaction[]
-  reviews        Review[]
-  EventAttendee  EventAttendee[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id               String          @id @default(cuid())
+  email            String          @unique
+  password         String
+  name             String
+  profilePicture   String?
+  role             Role            @default(CUSTOMER)
+  referralCode     String          @unique
+  referredById     String?
+  referredBy       User?           @relation("Referrals", fields: [referredById], references: [id])
+  referrals        User[]          @relation("Referrals")
+  events           Event[]         @relation("OrganizedEvents")
+  transactions     Transaction[]
+  reviews          Review[]
+  eventAttendees   EventAttendee[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  triggeredRewards Reward[]        @relation("RewardTriggeredBy") // buat coupon
+  receivedRewards  Reward[]        @relation("RewardReceiver") // buat point
 
   @@map("users")
 }
@@ -62,72 +63,66 @@ model Event {
 }
 
 model Ticket {
-  id              String            @id @default(cuid())
-  name            String
-  price           Int
-  eventId         String
-  event           Event             @relation(fields: [eventId], references: [id])
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  deletedAt       DateTime?
-  TransactionItem TransactionItem[]
+  id                String              @id @default(cuid())
+  name              String
+  price             Int
+  stock             Int
+  eventId           String
+  event             Event               @relation(fields: [eventId], references: [id])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  deletedAt         DateTime?
+  TransactionDetail TransactionDetail[]
 
   @@map("tickets")
 }
 
 model Transaction {
-  id             String            @id @default(cuid())
-  userId         String
-  user           User              @relation(fields: [userId], references: [id])
-  eventId        String
-  event          Event             @relation(fields: [eventId], references: [id])
-  totalAmount    Int
-  discountAmount Int               @default(0)
-  finalAmount    Int
-  status         TransactionStatus @default(WAITING_PAYMENT)
-  paymentProof   PaymentProof?
-  usedPoints     Int               @default(0)
-  usedVoucherId  String?
-  usedVoucher    Voucher?          @relation(fields: [usedVoucherId], references: [id])
-  expiresAt      DateTime
-  canceledAt     DateTime?
-  confirmedAt    DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  items          TransactionItem[]
+  id                 String              @id @default(cuid())
+  uuid               String              @unique @default(uuid())
+  userId             String
+  user               User                @relation(fields: [userId], references: [id])
+  eventId            String
+  event              Event               @relation(fields: [eventId], references: [id])
+  totalAmount        Int
+  discountAmount     Int                 @default(0)
+  finalAmount        Int
+  status             TransactionStatus   @default(WAITING_FOR_PAYMENT)
+  paymentProof       String?
+  usedPoints         Int                 @default(0)
+  usedVoucherId      String?
+  usedVoucher        Voucher?            @relation(fields: [usedVoucherId], references: [id])
+  expiresAt          DateTime
+  canceledAt         DateTime?
+  confirmedAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  transactionDetails TransactionDetail[]
 
   @@map("transactions")
 }
 
 enum TransactionStatus {
-  WAITING_PAYMENT
-  WAITING_CONFIRMATION
+  WAITING_FOR_PAYMENT
+  WAITING_FOR_CONFIRMATION
   DONE
   REJECTED
   EXPIRED
   CANCELED
 }
 
-model TransactionItem {
+model TransactionDetail {
   id            String      @id @default(cuid())
   transactionId String
   transaction   Transaction @relation(fields: [transactionId], references: [id])
-  ticketId      String?
-  tickets       Ticket?     @relation(fields: [ticketId], references: [id])
-  quantity      Int
+  ticketId      String
+  ticket        Ticket      @relation(fields: [ticketId], references: [id])
+  qty           Int
   price         Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  @@map("transaction_items")
-}
-
-model PaymentProof {
-  id            String      @id @default(cuid())
-  imageUrl      String
-  uploadedAt    DateTime    @default(now())
-  transactionId String      @unique
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
-
-  @@map("payment_proofs")
+  @@map("transaction_details")
 }
 
 model Review {
@@ -144,16 +139,18 @@ model Review {
   @@map("reviews")
 }
 
-model Point {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  amount    Int
-  reason    String? // contoh: "Referral Bonus", "Transaction Reward", "Refund", dll
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+model Reward {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation("RewardReceiver", fields: [userId], references: [id])
+  couponCode    String?
+  point         Int?      @default(0)
+  expiresAt     DateTime?
+  triggeredById String
+  triggeredBy   User?     @relation("RewardTriggeredBy", fields: [triggeredById], references: [id])
+  createdAt     DateTime  @default(now())
 
-  @@map("points")
+  @@map("rewards")
 }
 
 model Voucher {

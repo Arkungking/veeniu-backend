@@ -13,7 +13,7 @@ export class UserUpdateService {
     this.cloudinaryService = new CloudinaryService();
   }
 
-  userUpdate = async (body: UserUpdateDTO, image?: Express.Multer.File) => {
+  userUpdate = async (body: UserUpdateDTO, profilePicture?: Express.Multer.File) => {
   const user = await this.prisma.user.findFirst({
     where: { id: body.id },
   });
@@ -22,9 +22,9 @@ export class UserUpdateService {
 
   let imageUrl = user.profilePicture;
 
-  if (image) {
+  if (profilePicture) {
     if (user.profilePicture) await this.cloudinaryService.remove(user.profilePicture);
-    const { secure_url } = await this.cloudinaryService.upload(image);
+    const { secure_url } = await this.cloudinaryService.upload(profilePicture);
     imageUrl = secure_url;
   }
 
