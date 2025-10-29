@@ -13,7 +13,7 @@ export class UploaderMiddleware {
     return multer({ storage, limits });
   };
 
-  fileFIlter = (allowedTypes: core.MimeType[]) => {
+  fileFilter = (allowedTypes: core.MimeType[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
