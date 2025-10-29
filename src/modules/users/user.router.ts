@@ -35,7 +35,7 @@ export class UserUpdateRouter {
       this.uploaderMiddleware
         .upload()
         .fields([{ name: "profilePicture", maxCount: 1 }]),
-      this.uploaderMiddleware.fileFIlter([
+      this.uploaderMiddleware.fileFilter([
         "image/jpeg",
         "image/png",
         "image/heic",

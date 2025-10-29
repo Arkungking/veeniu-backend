@@ -57,7 +57,7 @@ export class EventService {
           profilePicture: true,
         },
       },
-      ticketTypes: {
+      tickets: {
         select: {
           id: true,
           name: true,
@@ -68,7 +68,7 @@ export class EventService {
         select: {
           id: true,
           code: true,
-          discountPct: true,
+          value: true,
         },
       },
     };
