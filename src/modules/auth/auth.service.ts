@@ -80,7 +80,7 @@ export class AuthService {
       user.email,
       "Forgot Password",
       "reset-password",
-      { link: `${BASE_URL_FE}/reset-password/${token}` }
+      { link: `${BASE_URL_FE}/forget-password/${token}` }
     );
   };
 }
