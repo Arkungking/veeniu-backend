@@ -30,4 +30,14 @@ export class EventController {
     const result = await this.eventService.getEvent(id);
     res.status(200).send(result);
   };
+
+  getLatestEvent = async (req: Request, res: Response) => {
+    const result = await this.eventService.getLatestEvent();
+    res.status(200).send(result);
+  }
+
+  getRandomEvent = async (req: Request, res: Response) => {
+    const result = await this.eventService.getRandomEvent();
+    res.status(200).send(result);
+  }
 }

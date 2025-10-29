@@ -16,6 +16,8 @@ export class EventRouter {
 
   private initializedRoutes = () => {
     this.router.get("/", this.eventController.getEvents);
+    this.router.get("/latest", this.eventController.getLatestEvent);
+    this.router.get("/random", this.eventController.getRandomEvent);
     this.router.get("/organizer", this.orgEventController.getEvents);
     this.router.post("/create", this.orgEventController.createEvent);
     this.router.get("/:id", this.eventController.getEvent);
