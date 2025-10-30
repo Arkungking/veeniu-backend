@@ -5,6 +5,7 @@ import { PORT } from "./config/env";
 import { EventRouter } from "./modules/events/event.router";
 import { VoucherRouter } from "./modules/vouchers/voucher.router";
 import { AuthRouter } from "./modules/auth/auth.router";
+import { TicketRouter } from "./modules/tickets/ticket.router";
 
 export class App {
   app: Express;
@@ -25,9 +26,11 @@ export class App {
     const authRouter = new AuthRouter();
     const eventRouter = new EventRouter();
     const voucherRouter = new VoucherRouter();
+    const ticketRouter = new TicketRouter();
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/events", eventRouter.getRouter());
     this.app.use("/vouchers", voucherRouter.getRouter());
+    this.app.use("/tickets", ticketRouter.getRouter());
   }
 
   private handleError() {
