@@ -28,8 +28,8 @@ export class OrgEventController {
   };
   createEvent = async (req: Request, res: Response) => {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const image = files.image?.[0];
-    const result = await this.orgEventService.createEvent(req.body, image);
+    const thumbnail = files.thumbnail?.[0];
+    const result = await this.orgEventService.createEvent(req.body, thumbnail);
     res.status(200).send(result);
   };
   editEvent = async (req: Request, res: Response) => {

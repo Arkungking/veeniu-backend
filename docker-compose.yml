@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    container_name: postgres_container1
+    container_name: veeniu_container
     restart: always
     environment:
       - POSTGRES_PASSWORD=admin
@@ -12,7 +12,7 @@ services:
 
   cache:
     image: redis
-    container_name: redis_container
+    container_name: veeniu_redis_container
     restart: always
     ports:
       - "6379:6379"
