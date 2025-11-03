@@ -21,13 +21,6 @@ export class UserUpdateRouter {
   }
 
   private initializedRoutes = () => {
-    this.router.post(
-      "/",
-      this.jwtMiddleware.verifyToken(JWT_SECRET!),
-      this.jwtMiddleware.verifyRole(["CUSTOMER"]),
-      this.userUpdateController.userUpdate
-    );
-
     this.router.patch(
       "/user-update",
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
