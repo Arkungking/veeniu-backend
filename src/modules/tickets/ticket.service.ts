@@ -1,3 +1,4 @@
+import { Prisma } from "../../generated/prisma";
 import { ApiError } from "../../utils/api-error";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateTicketDTO } from "./dto/create-ticket.dto";
@@ -12,15 +13,15 @@ export class TicketService {
         const skip = (page - 1) * limit;
         const where = {
           deletedAt: null,
-          ...(search && { name: { contains: search, mode: "insensitive" } }),
+          ...(search && { name: { contains: search, mode: Prisma.QueryMode.insensitive } }),
         };
         const [data, total] = await this.prisma.$transaction([
-          this.prisma.event.findMany({
+          this.prisma.ticket.findMany({
             skip,
             take: limit,
             where,
           }),
-          this.prisma.event.count({ where }),
+          this.prisma.ticket.count({ where }),
         ]);
     
         return {
