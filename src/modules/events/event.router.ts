@@ -6,6 +6,7 @@ import { JwtMiddleware } from "../../middlewares/jwt.middleware";
 import { JWT_SECRET } from "../../config/env";
 import { validateBody } from "../../middlewares/validation.middleware";
 import { CreateEventDTO } from "./dto/create-event.dto";
+import { formatEventData } from "../../middlewares/format.middleware";
 
 export class EventRouter {
   private router: Router;
@@ -34,12 +35,14 @@ export class EventRouter {
       this.jwtMiddleware.verifyRole(["ORGANIZER"]),
       this.uploaderMiddleware
         .upload()
-        .fields([{ name: "profilePicture", maxCount: 1 }]),
+        .fields([{ name: "thumbnail", maxCount: 1 }]),
       this.uploaderMiddleware.fileFilter([
         "image/jpeg",
+        "image/avif",
         "image/png",
         "image/heic",
       ]),
+      formatEventData,
       validateBody(CreateEventDTO),
       this.orgEventController.createEvent
     );

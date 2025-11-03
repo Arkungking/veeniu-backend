@@ -1,45 +1,54 @@
 import {
-  IsString,
-  IsNotEmpty,
-  IsInt,
-  IsOptional,
-  IsDateString,
-  Min,
-  IsEnum,
+    IsDateString,
+    IsEnum,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    Min
 } from "class-validator";
 import { Category, Location } from "../../../generated/prisma";
 
-export class CreateEventDTO {
+export class EditEventDTO {
   @IsNotEmpty()
+  @IsString()
+  id!: string;
+
+  @IsOptional()
   @IsString()
   title!: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   description!: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(Category)
   category!: Category;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(Location)
   location!: Location;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  startDate!: string;
+  startDate!: Date;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  endDate!: string;
+  endDate!: Date;
 
-  @IsNotEmpty()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  price!: number;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   totalSeats!: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   organizerId!: string;
 }

@@ -3,6 +3,7 @@ import { ApiError } from "../../utils/api-error";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEventDTO } from "./dto/create-event.dto";
+import { EditEventDTO } from "./dto/edit-event.dto";
 
 export class OrgEventService {
   private prisma: PrismaService;
@@ -60,15 +61,18 @@ export class OrgEventService {
     };
   };
 
-  createEvent = async (data: CreateEventDTO, image: Express.Multer.File) => {
-    if (!image) throw new ApiError("image is required", 400);
+  createEvent = async (
+    data: CreateEventDTO,
+    thumbnail: Express.Multer.File
+  ) => {
+    if (!thumbnail) throw new ApiError("image is required", 400);
 
-    const { secureUrl } = await this.cloudinaryService.upload(image);
+    const { url } = await this.cloudinaryService.upload(thumbnail);
 
     const newEvent = await this.prisma.event.create({
       data: {
         ...data,
-        imageUrl: secureUrl,
+        imageUrl: url,
       },
     });
 
@@ -78,7 +82,7 @@ export class OrgEventService {
     };
   };
 
-  editEvent = async (data: Partial<CreateEventDTO>) => {
+  editEvent = async (data: Partial<EditEventDTO>) => {
     const event = await this.prisma.event.findFirst({
       where: { id: data.id },
     });
