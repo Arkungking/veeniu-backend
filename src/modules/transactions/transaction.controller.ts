@@ -9,6 +9,22 @@ export class TransactionController {
     this.transactionService = new TransactionService();
   }
 
+  getUserTransactions = async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const authUserId = String(res.locals.user.id);
+    const page = +(req.query.page || 1);
+    const limit = +(req.query.limit || 10);
+    const search = req.query.search as string;
+    const result = await this.transactionService.getUserTransactions(
+      userId,
+      authUserId,
+      page,
+      limit,
+      search
+    );
+    res.status(200).send(result);
+  };
+
   createTransaction = async (req: Request, res: Response) => {
     const body = req.body;
     const authUserId = String(res.locals.user.id);

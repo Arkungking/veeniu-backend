@@ -1,4 +1,4 @@
-import { TransactionStatus } from "../../generated/prisma";
+import { Prisma, TransactionStatus } from "../../generated/prisma";
 import { ApiError } from "../../utils/api-error";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { MailService } from "../mail/mail.service";
@@ -18,6 +18,63 @@ export class TransactionService {
     this.transactionQueue = new TransactionQueue();
     this.cloudinaryService = new CloudinaryService();
   }
+
+  getUserTransactions = async (
+    userId: string,
+    authUserId: string,
+    page = 1,
+    limit = 10,
+    search?: string
+  ) => {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) throw new ApiError("User not found", 404);
+    if (authUserId !== userId)
+      throw new ApiError(
+        "You are not authorized to view this user's transactions",
+        403
+      );
+
+    const skip = (page - 1) * limit;
+
+    const transactions = await this.prisma.transaction.findMany({
+      skip,
+      take: limit,
+      where: {
+        userId,
+        ...(search && {
+          event: {
+            title: { contains: search, mode: Prisma.QueryMode.insensitive },
+          },
+        }),
+      },
+      include: {
+        event: true,
+        transactionDetails: {
+          include: {
+            ticket: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const total = await this.prisma.transaction.count({ where: { userId } });
+
+    return {
+      message: "User transactions fetched successfully",
+      data: transactions,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  };
 
   createTransaction = async (
     body: CreateTransactionDTO,
@@ -65,11 +122,14 @@ export class TransactionService {
     const result = await this.prisma.$transaction(async (tx) => {
       // 4. create data transaction
       const transaction = await tx.transaction.create({
-        data: { userId: authUserId, eventId,
+        data: {
+          userId: authUserId,
+          eventId,
           totalAmount,
           discountAmount,
           finalAmount,
-          expiresAt, },
+          expiresAt,
+        },
       });
 
       // 5. create data transaction detail
@@ -116,7 +176,7 @@ export class TransactionService {
         eventTitle: event.title,
         uploadUrl: `https://veeniu.com/transaction/${result.uuid}/upload-proof`,
         year: new Date().getFullYear(),
-      },
+      }
     );
     // 8. buat delay queue
     await this.transactionQueue.addNewTransaction(result.uuid);
@@ -133,7 +193,6 @@ export class TransactionService {
     const transaction = await this.prisma.transaction.findFirst({
       where: { uuid },
     });
-
 
     // kalo ga ada throw error
     if (!transaction) {
@@ -173,7 +232,7 @@ export class TransactionService {
     return { message: "upload payment proof success" };
   };
 
-   acceptTransaction = async (uuid: string, organizerId: string) => {
+  acceptTransaction = async (uuid: string, organizerId: string) => {
     const transaction = await this.prisma.transaction.findFirst({
       where: { uuid },
       include: { event: true },
@@ -234,7 +293,6 @@ export class TransactionService {
           data: { stock: { increment: detail.qty } },
         });
       }
-
     });
 
     return { message: "transaction rejected and stock restored" };

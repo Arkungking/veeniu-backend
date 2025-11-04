@@ -32,10 +32,22 @@ export class TransactionRouter {
       "/payment-proof",
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
       this.jwtMiddleware.verifyRole(["CUSTOMER"]),
-      this.uploaderMiddleware.upload().fields([{ name: "paymentProof", maxCount: 1 }]),
-      this.uploaderMiddleware.fileFilter(["image/jpeg", "image/png", "image/heic"]),
+      this.uploaderMiddleware
+        .upload()
+        .fields([{ name: "paymentProof", maxCount: 1 }]),
+      this.uploaderMiddleware.fileFilter([
+        "image/jpeg",
+        "image/png",
+        "image/heic",
+      ]),
       validateBody(UploadPaymentProofDTO),
       this.transactionController.uploadPaymentProof
+    );
+    this.router.get(
+      "/:userId",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["CUSTOMER"]),
+      this.transactionController.getUserTransactions
     );
   };
 

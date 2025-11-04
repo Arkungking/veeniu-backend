@@ -16,4 +16,8 @@ export class CreateTicketDTO {
   @IsNotEmpty()
   @IsString()
   eventId!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  organizerId!: string;
 }

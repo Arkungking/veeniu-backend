@@ -4,10 +4,6 @@ import { IsDate, IsInt, IsNotEmpty, IsString, Min } from "class-validator";
 export class CreateVoucherDTO {
   @IsNotEmpty()
   @IsString()
-  name!: string;
-
-  @IsNotEmpty()
-  @IsString()
   code!: string;
 
   @IsNotEmpty()
@@ -23,4 +19,8 @@ export class CreateVoucherDTO {
   @Type(() => Date)
   @IsDate()
   expiresAt!: Date;
+
+  @IsNotEmpty()
+  @IsString()
+  organizerId!: string;
 }

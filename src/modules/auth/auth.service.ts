@@ -35,6 +35,13 @@ export class AuthService {
       data: { ...body, password: hashedPassword, referralCode },
     });
 
+    await this.mailService.sendEmail(
+      body.email,
+      "Welcome new user",
+      "welcome",
+      {}
+    );
+
     return { message: "register user success" };
   };
 

@@ -27,6 +27,8 @@ model User {
   updatedAt        DateTime        @updatedAt
   triggeredRewards Reward[]        @relation("RewardTriggeredBy") // buat coupon
   receivedRewards  Reward[]        @relation("RewardReceiver") // buat point
+  Vouchers         Voucher[]       @relation("OrganizedVouchers")
+  Tickets          Ticket[]        @relation("OrganizedTickets")
 
   @@map("users")
 }
@@ -67,6 +69,8 @@ model Ticket {
   name              String
   price             Int
   stock             Int
+  organizerId       String
+  organizer         User                @relation("OrganizedTickets", fields: [organizerId], references: [id])
   eventId           String
   event             Event               @relation(fields: [eventId], references: [id])
   createdAt         DateTime            @default(now())
@@ -159,6 +163,8 @@ model Voucher {
   value       Int
   eventId     String
   event       Event         @relation(fields: [eventId], references: [id])
+  organizerId String
+  organizer   User          @relation("OrganizedVouchers", fields: [organizerId], references: [id])
   expiresAt   DateTime
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt

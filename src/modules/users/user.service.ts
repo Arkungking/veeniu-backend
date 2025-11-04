@@ -1,4 +1,3 @@
-import { profile } from "console";
 import { ApiError } from "../../utils/api-error";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -13,30 +12,38 @@ export class UserUpdateService {
     this.cloudinaryService = new CloudinaryService();
   }
 
-  userUpdate = async (body: UserUpdateDTO, profilePicture?: Express.Multer.File) => {
-  const user = await this.prisma.user.findFirst({
-    where: { id: body.id },
-  });
+  
 
-  if (!user) throw new ApiError("user not found", 404);
+  userUpdate = async (
+    body: UserUpdateDTO,
+    profilePicture?: Express.Multer.File
+  ) => {
+    const user = await this.prisma.user.findFirst({
+      where: { id: body.id },
+    });
 
-  let imageUrl = user.profilePicture;
+    if (!user) throw new ApiError("user not found", 404);
 
-  if (profilePicture) {
-    if (user.profilePicture) await this.cloudinaryService.remove(user.profilePicture);
-    const { secure_url } = await this.cloudinaryService.upload(profilePicture);
-    imageUrl = secure_url;
-  }
+    let imageUrl = user.profilePicture;
 
-  const updateData: any = {};
-  if (body.name) updateData.name = body.name;
-  updateData.image = imageUrl;
+    if (profilePicture) {
+      if (user.profilePicture)
+        await this.cloudinaryService.remove(user.profilePicture);
+      const { secure_url } = await this.cloudinaryService.upload(
+        profilePicture
+      );
+      imageUrl = secure_url;
+    }
 
-  await this.prisma.user.update({
-    where: { id: body.id },
-    data: updateData,
-  });
+    const updateData: any = {};
+    if (body.name) updateData.name = body.name;
+    updateData.image = imageUrl;
 
-  return { message: "update user success" };
-};
+    await this.prisma.user.update({
+      where: { id: body.id },
+      data: updateData,
+    });
+
+    return { message: "update user success" };
+  };
 }

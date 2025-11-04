@@ -10,7 +10,7 @@ export class OrgEventController {
   }
 
   getEvents = async (req: Request, res: Response) => {
-    const orgId = req.body;
+    const orgId = req.params.organizerId;
     const page = +(req.query.page || 1);
     const limit = +(req.query.limit || 10);
     const search = req.query.search as string;
