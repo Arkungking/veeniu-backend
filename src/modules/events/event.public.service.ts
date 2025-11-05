@@ -1,4 +1,4 @@
-import { Category, Location } from "../../generated/prisma";
+import { Category, Location, Prisma } from "../../generated/prisma";
 import { ApiError } from "../../utils/api-error";
 import { PrismaService } from "../prisma/prisma.service";
 import { RedisService } from "../redis/redis.service";
@@ -22,7 +22,9 @@ export class EventService {
     const skip = (page - 1) * limit;
     const where = {
       deletedAt: null,
-      ...(search && { name: { contains: search, mode: "insensitive" } }),
+      ...(search && {
+        title: { contains: search, mode: Prisma.QueryMode.insensitive },
+      }),
       ...(category && { category: category }),
       ...(location && { location: location }),
     };

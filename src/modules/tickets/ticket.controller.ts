@@ -16,6 +16,20 @@ export class TicketController {
     res.status(200).send(result);
   };
 
+  getOrgTickets = async (req: Request, res: Response) => {
+    const orgId = req.query.organizerId as string;
+    const page = +(req.query.page || 1);
+    const limit = +(req.query.limit || 20);
+    const search = req.query.search as string;
+    const result = await this.ticketService.getOrgTickets(
+      orgId,
+      page,
+      limit,
+      search
+    );
+    res.status(200).send(result);
+  };
+
   getTicket = async (req: Request, res: Response) => {
     const id = req.params.id;
     const result = await this.ticketService.getTicket(id);

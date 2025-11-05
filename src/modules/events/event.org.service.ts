@@ -1,4 +1,4 @@
-import { Category, Location } from "../../generated/prisma";
+import { Category, Location, Prisma } from "../../generated/prisma";
 import { ApiError } from "../../utils/api-error";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -25,7 +25,9 @@ export class OrgEventService {
     const where = {
       organizerId,
       deletedAt: null,
-      ...(search && { name: { contains: search, mode: "insensitive" } }),
+      ...(search && {
+        title: { contains: search, mode: Prisma.QueryMode.insensitive },
+      }),
       ...(category && { category: category }),
       ...(location && { location: location }),
     };
@@ -49,7 +51,7 @@ export class OrgEventService {
     ]);
 
     return {
-      message: "Events fetched successfully",
+      message: "Organizer events fetched successfully",
       data,
       meta: {
         total,
