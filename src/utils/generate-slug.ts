@@ -9,5 +9,5 @@ export const generateSlug = (title: string): string => {
 
   const uniqueSuffix = Math.random().toString(36).substring(2, 8);
 
-  return `${baseSlug}-${uniqueSuffix}`;
+  return baseSlug;
 };
