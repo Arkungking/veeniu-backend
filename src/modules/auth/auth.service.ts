@@ -29,10 +29,10 @@ export class AuthService {
     }
 
     const hashedPassword = await hashPassword(body.password);
-    const referralCode = randomCodeGenerator();
+    const userReferralCode = randomCodeGenerator();
 
     await this.prisma.user.create({
-      data: { ...body, password: hashedPassword, referralCode },
+      data: { ...body, password: hashedPassword, referralCode: userReferralCode },
     });
 
     await this.mailService.sendEmail(
