@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Min,
@@ -29,6 +30,10 @@ export class CreateTransactionDTO {
   @IsOptional()
   @IsString()
   voucherId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  usePoints?: number
 
   @IsNotEmpty()
   @IsEmail()
