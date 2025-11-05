@@ -50,7 +50,7 @@ export class EventService {
     };
   };
 
-  getEvent = async (id: string) => {
+  getEvent = async (slug: string) => {
     const include = {
       organizer: {
         select: {
@@ -76,7 +76,7 @@ export class EventService {
     };
 
     const event = await this.prisma.event.findFirst({
-      where: { id },
+      where: { slug },
       include,
     });
 
