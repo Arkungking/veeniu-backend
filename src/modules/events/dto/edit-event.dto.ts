@@ -16,39 +16,34 @@ export class EditEventDTO {
 
   @IsOptional()
   @IsString()
-  title!: string;
+  title?: string;
 
   @IsOptional()
   @IsString()
-  description!: string;
+  description?: string;
 
   @IsOptional()
   @IsEnum(Category)
-  category!: Category;
+  category?: Category;
 
   @IsOptional()
   @IsEnum(Location)
-  location!: Location;
+  location?: Location;
 
   @IsOptional()
   @IsDateString()
-  startDate!: Date;
+  startDate?: Date;
 
   @IsOptional()
   @IsDateString()
-  endDate!: Date;
+  endDate?: Date;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  price!: number;
+  totalSeats?: number;
 
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  totalSeats!: number;
-
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   organizerId!: string;
 }

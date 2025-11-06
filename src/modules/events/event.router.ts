@@ -7,6 +7,7 @@ import { JWT_SECRET } from "../../config/env";
 import { validateBody } from "../../middlewares/validation.middleware";
 import { CreateEventDTO } from "./dto/create-event.dto";
 import { formatEventData } from "../../middlewares/format.middleware";
+import { EditEventDTO } from "./dto/edit-event.dto";
 
 export class EventRouter {
   private router: Router;
@@ -50,7 +51,21 @@ export class EventRouter {
       this.orgEventController.createEvent
     );
     this.router.get("/:id", this.eventController.getEvent);
-    this.router.patch("/edit", this.orgEventController.editEvent);
+    this.router.patch(
+      "/edit/:eventId",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["ORGANIZER"]),
+      this.uploaderMiddleware.upload().single("thumbnail"),
+      this.uploaderMiddleware.fileFilter([
+        "image/jpeg",
+        "image/avif",
+        "image/png",
+        "image/heic",
+      ]),
+      formatEventData,
+      validateBody(EditEventDTO),
+      this.orgEventController.editEvent
+    );
     this.router.delete("/delete", this.orgEventController.deleteEvent);
   };
 

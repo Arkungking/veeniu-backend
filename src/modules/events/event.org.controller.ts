@@ -33,8 +33,10 @@ export class OrgEventController {
     res.status(200).send(result);
   };
   editEvent = async (req: Request, res: Response) => {
+    const id = req.params.eventId;
+    const thumbnail = req.file;
     const data = req.body;
-    const result = await this.orgEventService.editEvent(data);
+    const result = await this.orgEventService.editEvent(id, data, thumbnail);
     res.status(200).send(result);
   };
   deleteEvent = async (req: Request, res: Response) => {
