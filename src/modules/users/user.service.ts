@@ -1,4 +1,5 @@
 import { ApiError } from "../../utils/api-error";
+import { hashPassword } from "../../utils/password";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { UserUpdateDTO } from "./dto/user-update.dto";
@@ -36,6 +37,10 @@ export class UserUpdateService {
 
     const updateData: any = {};
     if (body.name) updateData.name = body.name;
+    if (body.password) {
+      const hashedPassword = await hashPassword(body.password);
+      updateData.password = hashedPassword;
+    }
     updateData.profilePicture = imageUrl;
 
     await this.prisma.user.update({
