@@ -28,6 +28,12 @@ export class TicketRouter {
       this.jwtMiddleware.verifyRole(["ORGANIZER"]),
       this.ticketController.createTicket
     );
+    this.router.patch(
+      "/edit/:id",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["ORGANIZER"]),
+      this.ticketController.editTicket
+    );
     this.router.delete("/delete/:id", this.ticketController.deleteTicket);
   };
 

@@ -42,6 +42,13 @@ export class TicketController {
     res.status(200).send(result);
   };
 
+    editTicket = async (req: Request, res: Response) => {
+    const id = req.params.id
+    const data = req.body;
+    const result = await this.ticketService.editTicket(id, data);
+    res.status(200).send(result);
+  };
+
   deleteTicket = async (req: Request, res: Response) => {
     const id = req.params.id;
     const result = await this.ticketService.deleteTicket(id);

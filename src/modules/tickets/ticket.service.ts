@@ -113,6 +113,21 @@ export class TicketService {
     };
   };
 
+  editTicket = async (id: string, data: Partial<CreateTicketDTO>) => {
+    const ticket = await this.prisma.ticket.findFirst({
+      where: { id },
+    });
+    if (!ticket) throw new ApiError("ticket not found", 404);
+    await this.prisma.ticket.update({
+      where: { id },
+      data,
+    });
+
+    return {
+      message: "Ticket edited successfully",
+    };
+  };
+
   deleteTicket = async (id: string) => {
     const ticket = await this.prisma.ticket.findFirst({
       where: { id },
