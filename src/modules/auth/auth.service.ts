@@ -47,6 +47,7 @@ export class AuthService {
       data: {
         email: body.email,
         password: hashedPassword,
+        role: body.role,
         name: body.name,
         referralCode: userReferralCode,
         referredById, // may be null if not using referral

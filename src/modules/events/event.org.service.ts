@@ -71,14 +71,14 @@ export class OrgEventService {
     if (!thumbnail) throw new ApiError("image is required", 400);
 
     const { url } = await this.cloudinaryService.upload(thumbnail);
-
     const slug = generateSlug(data.title);
+
 
     const newEvent = await this.prisma.event.create({
       data: {
         ...data,
-        slug,
         imageUrl: url,
+        slug,
       },
     });
 

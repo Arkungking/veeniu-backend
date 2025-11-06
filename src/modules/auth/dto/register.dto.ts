@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Role } from "../../../generated/prisma";
 
 export class RegisterDTO {
   @IsNotEmpty()
@@ -16,4 +17,8 @@ export class RegisterDTO {
   @IsOptional()
   @IsString()
   referralCode?: string;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
 }
