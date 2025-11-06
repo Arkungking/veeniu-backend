@@ -122,7 +122,7 @@ export class VoucherService {
     });
 
     return {
-      message: "Voucher deleted successfully",
+      message: "Voucher edited successfully",
     };
   };
 
