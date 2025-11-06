@@ -29,6 +29,7 @@ export class VoucherRouter {
       this.jwtMiddleware.verifyRole(["ORGANIZER"]),
       this.voucherController.createVoucher
     );
+    this.router.patch("/edit/:id", this.voucherController.deleteVoucher);
     this.router.delete("/delete/:id", this.voucherController.deleteVoucher);
   };
 
