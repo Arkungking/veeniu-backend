@@ -73,12 +73,10 @@ export class OrgEventService {
     const { url } = await this.cloudinaryService.upload(thumbnail);
     const slug = generateSlug(data.title);
 
-    const slug = generateSlug(data.title);
 
     const newEvent = await this.prisma.event.create({
       data: {
         ...data,
-        slug,
         imageUrl: url,
         slug,
       },
