@@ -1,11 +1,10 @@
 import {
-  IsString,
-  IsNotEmpty,
-  IsInt,
-  IsOptional,
   IsDateString,
-  Min,
   IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Min,
 } from "class-validator";
 import { Category, Location } from "../../../generated/prisma";
 

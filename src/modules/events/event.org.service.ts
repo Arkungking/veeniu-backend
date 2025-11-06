@@ -1,5 +1,6 @@
 import { Category, Location, Prisma } from "../../generated/prisma";
 import { ApiError } from "../../utils/api-error";
+import { generateSlug } from "../../utils/generate-slug";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEventDTO } from "./dto/create-event.dto";
@@ -70,11 +71,13 @@ export class OrgEventService {
     if (!thumbnail) throw new ApiError("image is required", 400);
 
     const { url } = await this.cloudinaryService.upload(thumbnail);
+    const slug = generateSlug(data.title);
 
     const newEvent = await this.prisma.event.create({
       data: {
         ...data,
         imageUrl: url,
+        slug,
       },
     });
 
