@@ -22,7 +22,7 @@ export class UserUpdateRouter {
 
   private initializedRoutes = () => {
     this.router.patch(
-      "/user-update",
+      "/update/:id",
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
       this.jwtMiddleware.verifyRole(["CUSTOMER"]),
       this.uploaderMiddleware

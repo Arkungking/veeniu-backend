@@ -12,14 +12,13 @@ export class UserUpdateService {
     this.cloudinaryService = new CloudinaryService();
   }
 
-  
-
   userUpdate = async (
+    id: string,
     body: UserUpdateDTO,
     profilePicture?: Express.Multer.File
   ) => {
     const user = await this.prisma.user.findFirst({
-      where: { id: body.id },
+      where: { id },
     });
 
     if (!user) throw new ApiError("user not found", 404);
@@ -37,10 +36,10 @@ export class UserUpdateService {
 
     const updateData: any = {};
     if (body.name) updateData.name = body.name;
-    updateData.image = imageUrl;
+    updateData.profilePicture = imageUrl;
 
     await this.prisma.user.update({
-      where: { id: body.id },
+      where: { id },
       data: updateData,
     });
 

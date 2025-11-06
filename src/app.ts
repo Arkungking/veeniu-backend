@@ -7,6 +7,7 @@ import { VoucherRouter } from "./modules/vouchers/voucher.router";
 import { AuthRouter } from "./modules/auth/auth.router";
 import { TicketRouter } from "./modules/tickets/ticket.router";
 import { TransactionRouter } from "./modules/transactions/transaction.router";
+import { UserUpdateRouter } from "./modules/users/user.router";
 
 export class App {
   app: Express;
@@ -29,11 +30,13 @@ export class App {
     const voucherRouter = new VoucherRouter();
     const ticketRouter = new TicketRouter();
     const transactionRouter = new TransactionRouter();
+    const userUpdateRouter = new UserUpdateRouter();
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/events", eventRouter.getRouter());
     this.app.use("/vouchers", voucherRouter.getRouter());
     this.app.use("/tickets", ticketRouter.getRouter());
     this.app.use("/transactions", transactionRouter.getRouter());
+    this.app.use("/users", userUpdateRouter.getRouter());
   }
 
   private handleError() {

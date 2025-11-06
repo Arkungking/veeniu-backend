@@ -9,10 +9,11 @@ export class UserUpdateController {
   }
 
   userUpdate = async (req: Request, res: Response) => {
+    const id = req.params.id
     const body = req.body;
-    const file = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const image = file.image?.[0];
-    const result = await this.userUpdateservice.userUpdate(body, image);
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const profilePicture = files.profilePicture?.[0];
+    const result = await this.userUpdateservice.userUpdate(id, body, profilePicture);
     res.status(200).send(result);
   };
 }
