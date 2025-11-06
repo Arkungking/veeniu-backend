@@ -111,6 +111,21 @@ export class VoucherService {
     };
   };
 
+  editVoucher = async (id: string, data: Partial<CreateVoucherDTO>) => {
+    const voucher = await this.prisma.voucher.findFirst({
+      where: { id },
+    });
+    if (!voucher) throw new ApiError("voucher not found", 404);
+    await this.prisma.voucher.update({
+      where: { id },
+      data,
+    });
+
+    return {
+      message: "Voucher deleted successfully",
+    };
+  };
+
   deleteVoucher = async (id: string) => {
     const voucher = await this.prisma.voucher.findFirst({
       where: { id },

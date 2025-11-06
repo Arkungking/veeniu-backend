@@ -114,10 +114,30 @@ export class TransactionService {
       return sum + ticket.price * item.qty;
     }, 0);
 
-    const discountAmount = 0; // later handle voucher/points
+    // apply voucher and points
+    let discountAmount = 0;
+    // 1. voucher
+    if (body.voucherId) {
+      const voucher = await this.prisma.voucher.findUnique({ where: { id: body.voucherId }});
+      if (!voucher) throw new ApiError("invalid voucher", 400);
+      if (voucher.eventId !== eventId) throw new ApiError("voucher not valid for this event", 400);
+      if (voucher.expiresAt < new Date()) throw new ApiError("voucher expired", 400);
+      discountAmount += voucher.value;
+    }
+    // 2. points
+    if (body.usePoints && body.usePoints > 0) {
+      const userPointsSum = await this.prisma.reward.aggregate({
+        where: { userId: authUserId, point: { gt: 0 } },
+        _sum: { point: true }
+      });
+      const available = userPointsSum._sum.point ?? 0;
+      if (body.usePoints > available) throw new ApiError("not enough points", 400);
+      discountAmount += body.usePoints; // 1 point = 1 IDR
+    }
+
     const finalAmount = totalAmount - discountAmount;
 
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 15); //15 mnt expr
+    const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); //2 hour expr
 
     const result = await this.prisma.$transaction(async (tx) => {
       // 4. create data transaction
@@ -148,12 +168,35 @@ export class TransactionService {
         data: transactionDetails,
       });
 
+
       // 6. decrement stock for each ticket
       for (const item of payload) {
         await tx.ticket.update({
           where: { id: item.ticketId },
           data: { stock: { decrement: item.qty } },
         });
+      }
+
+      // if voucher used: mark voucher as used or create a relation.
+      if (body.voucherId) {
+        // simple: create a relation via Transaction.usedVoucherId
+        const voucher = await tx.voucher.findUnique({ where: { code: body.voucherId }});
+        if (voucher) {
+          await tx.transaction.update({ where: { id: transaction.id }, data: { usedVoucherId: voucher.id }});
+        }
+      }
+
+      // if points used: create a Reward record to mark usage (negative point)
+      if (body.usePoints && body.usePoints > 0) {
+        await tx.reward.create({
+          data: {
+            userId: authUserId,
+            point: -Math.abs(body.usePoints),
+            triggeredById: authUserId,
+            createdAt: new Date()
+          }
+        });
+        // alternatively decrement aggregated pointBalance
       }
 
       return transaction;
@@ -235,7 +278,7 @@ export class TransactionService {
   acceptTransaction = async (uuid: string, organizerId: string) => {
     const transaction = await this.prisma.transaction.findFirst({
       where: { uuid },
-      include: { event: true },
+      include: { event: true, transactionDetails: true },
     });
 
     if (!transaction) throw new ApiError("Transaction not found", 404);
@@ -246,12 +289,16 @@ export class TransactionService {
       throw new ApiError("Invalid transaction status", 400);
     }
 
-    await this.prisma.transaction.update({
-      where: { id: transaction.id },
-      data: {
-        status: "DONE",
-        confirmedAt: new Date(),
-      },
+    await this.prisma.$transaction(async tx => {
+      await tx.transaction.update({ where: { id: transaction.id }, data: { status: "DONE", confirmedAt: new Date() }});
+      // create or update attendee
+      const existing = await tx.eventAttendee.findFirst({ where: { eventId: transaction.eventId, userId: transaction.userId }});
+      const ticketCount = transaction.transactionDetails.reduce((s, d) => s + d.qty, 0);
+      if (existing) {
+        await tx.eventAttendee.update({ where: { id: existing.id }, data: { ticketCount: { increment: ticketCount }, totalPaid: { increment: transaction.finalAmount } }});
+      } else {
+        await tx.eventAttendee.create({ data: { eventId: transaction.eventId, userId: transaction.userId, ticketCount, totalPaid: transaction.finalAmount }});
+      }
     });
 
     return { message: "transaction accepted" };
@@ -292,6 +339,19 @@ export class TransactionService {
           where: { id: detail.ticketId },
           data: { stock: { increment: detail.qty } },
         });
+      }
+
+      // rollback used points: create reward with positive points (optional)
+      if (transaction.usedPoints && transaction.usedPoints > 0) {
+        await tx.reward.create({ data: { userId: transaction.userId, point: transaction.usedPoints, triggeredById: transaction.userId }});
+      }
+      // rollback voucher: if you reserved voucher mark as unused (depending how you implement)
+      if (transaction.paymentProof) {
+        await this.cloudinaryService.remove(transaction.paymentProof);
+        await tx.transaction.update({
+    where: { id: transaction.id },
+    data: { paymentProof: null },
+  });
       }
     });
 

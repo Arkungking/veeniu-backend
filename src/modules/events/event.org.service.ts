@@ -73,9 +73,12 @@ export class OrgEventService {
     const { url } = await this.cloudinaryService.upload(thumbnail);
     const slug = generateSlug(data.title);
 
+    const slug = generateSlug(data.title);
+
     const newEvent = await this.prisma.event.create({
       data: {
         ...data,
+        slug,
         imageUrl: url,
         slug,
       },
@@ -87,15 +90,28 @@ export class OrgEventService {
     };
   };
 
-  editEvent = async (data: Partial<EditEventDTO>) => {
-    const event = await this.prisma.event.findFirst({
-      where: { id: data.id },
-    });
+  editEvent = async (
+    id: string,
+    data: Partial<EditEventDTO>,
+    thumbnail?: Express.Multer.File
+  ) => {
+    const event = await this.prisma.event.findFirst({ where: { id } });
     if (!event) throw new ApiError("event not found", 404);
 
+    let imageUrl = event.imageUrl;
+
+    if (thumbnail) {
+      await this.cloudinaryService.remove(event.imageUrl);
+      const { url } = await this.cloudinaryService.upload(thumbnail);
+      imageUrl = url;
+    }
+
     const updatedEvent = await this.prisma.event.update({
-      where: { id: data.id },
-      data,
+      where: { id },
+      data: {
+        ...data,
+        imageUrl,
+      },
     });
 
     return {
@@ -109,10 +125,14 @@ export class OrgEventService {
       where: { id },
     });
     if (!event) throw new ApiError("event not found", 404);
+
+    await this.cloudinaryService.remove(event.imageUrl);
+
     await this.prisma.event.update({
       where: { id },
       data: {
         deletedAt: new Date(),
+        imageUrl: "",
       },
     });
 

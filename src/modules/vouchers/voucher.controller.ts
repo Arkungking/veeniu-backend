@@ -42,6 +42,13 @@ export class VoucherController {
     res.status(200).send(result);
   };
 
+  editVoucher = async (req: Request, res: Response) => {
+    const id = req.params.id
+    const data = req.body;
+    const result = await this.voucherService.editVoucher(id, data);
+    res.status(200).send(result);
+  };
+
   deleteVoucher = async (req: Request, res: Response) => {
     const id = req.params.id;
     const result = await this.voucherService.deleteVoucher(id);

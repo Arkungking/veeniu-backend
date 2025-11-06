@@ -4,6 +4,8 @@ import {
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsNumber,
+  IsOptional,
   IsString,
   Min,
   ValidateNested,
@@ -24,6 +26,14 @@ export class CreateTransactionDTO {
   @Type(() => TransactionItemDTO)
   @ValidateNested({ each: true })
   payload!: TransactionItemDTO[];
+
+  @IsOptional()
+  @IsString()
+  voucherId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  usePoints?: number
 
   @IsNotEmpty()
   @IsEmail()

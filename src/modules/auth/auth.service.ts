@@ -28,12 +28,62 @@ export class AuthService {
       throw new ApiError("email already exist", 400);
     }
 
-    const hashedPassword = await hashPassword(body.password);
-    const referralCode = randomCodeGenerator();
+    // check referral code (optional)
+    let referredById: string | null = null;
+    let referrer: any = null;
+    if (body.referralCode) {
+      referrer = await this.prisma.user.findFirst({
+        where: { referralCode: body.referralCode },
+      });
+      if (!referrer) throw new ApiError("invalid referral code", 400);
+      referredById = referrer.id;
+    }
 
-    await this.prisma.user.create({
-      data: { ...body, password: hashedPassword, referralCode },
+    const hashedPassword = await hashPassword(body.password);
+    const userReferralCode = randomCodeGenerator();
+
+    // create user akh
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: body.email,
+        password: hashedPassword,
+        name: body.name,
+        referralCode: userReferralCode,
+        referredById, // may be null if not using referral
+      },
     });
+
+    if (referrer) {
+      // create coupon code for referrer
+      const couponCode = `REF-${Math.random()
+        .toString(36)
+        .substring(2, 10)
+        .toUpperCase()}`;
+      const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+      await this.prisma.reward.create({
+        data: {
+          userId: referrer.id, // referrer receives reward
+          triggeredById: newUser.id, // triggered by the new user
+          couponCode,
+          point: 0,
+          expiresAt: expiry,
+        },
+      });
+
+      // optionally give points to the new user (welcome bonus)
+      await this.prisma.reward.create({
+        data: {
+          userId: newUser.id,
+          triggeredById: referrer.id,
+          point: 10000, // example welcome points
+          expiresAt: expiry,
+        },
+      });
+    }
+    // await this.prisma.user.create({
+    //   data: { ...body, password: hashedPassword, referralCode: userReferralCode },
+    // });
 
     await this.mailService.sendEmail(
       body.email,
