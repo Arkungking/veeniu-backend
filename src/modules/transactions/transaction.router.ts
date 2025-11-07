@@ -5,6 +5,8 @@ import { JWT_SECRET } from "../../config/env";
 import { UploaderMiddleware } from "../../middlewares/uploader.middleware";
 import { validateBody } from "../../middlewares/validation.middleware";
 import { UploadPaymentProofDTO } from "./dto/upload-payment-proof.dto";
+import { CreateTransactionDTO } from "./dto/create-transaction.dto";
+import { SetTransactionStatusDTO } from "./dto/set-transaction-status.dto";
 
 export class TransactionRouter {
   private router: Router;
@@ -22,10 +24,19 @@ export class TransactionRouter {
 
   private initializedRoutes = () => {
     this.router.post(
-      "/",
+      "/create",
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
       this.jwtMiddleware.verifyRole(["CUSTOMER"]),
+      validateBody(CreateTransactionDTO),
       this.transactionController.createTransaction
+    );
+
+    this.router.patch(
+      "/status/:uuid",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["ORGANIZER"]),
+      validateBody(SetTransactionStatusDTO),
+      this.transactionController.setTransactionStatus
     );
 
     this.router.patch(
@@ -43,11 +54,33 @@ export class TransactionRouter {
       validateBody(UploadPaymentProofDTO),
       this.transactionController.uploadPaymentProof
     );
+
     this.router.get(
-      "/:userId",
+      "/tickets/:userId",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["CUSTOMER"]),
+      this.transactionController.getUserTickets
+    );
+
+    this.router.get(
+      "/organizer/:orgId",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["ORGANIZER"]),
+      this.transactionController.getOrgTransactions
+    );
+
+    this.router.get(
+      "/user/:userId",
       this.jwtMiddleware.verifyToken(JWT_SECRET!),
       this.jwtMiddleware.verifyRole(["CUSTOMER"]),
       this.transactionController.getUserTransactions
+    );
+
+    this.router.get(
+      "/:transactionId",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["CUSTOMER"]),
+      this.transactionController.getTransaction
     );
   };
 

@@ -13,7 +13,7 @@ import {
 
 class TransactionItemDTO {
   @IsString()
-  @Min(1)
+  @IsNotEmpty()
   ticketId!: string;
 
   @IsInt()
@@ -23,8 +23,8 @@ class TransactionItemDTO {
 
 export class CreateTransactionDTO {
   @IsArray()
-  @Type(() => TransactionItemDTO)
   @ValidateNested({ each: true })
+  @Type(() => TransactionItemDTO)
   payload!: TransactionItemDTO[];
 
   @IsOptional()
@@ -33,7 +33,7 @@ export class CreateTransactionDTO {
 
   @IsOptional()
   @IsNumber()
-  usePoints?: number
+  usePoints?: number;
 
   @IsNotEmpty()
   @IsEmail()
