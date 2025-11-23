@@ -99,6 +99,10 @@ export class AuthService {
   login = async (body: LoginDTO) => {
     const user = await this.prisma.user.findFirst({
       where: { email: body.email },
+      include: {
+        triggeredRewards: true,
+        receivedRewards: true,
+      },
     });
 
     if (!user) {
@@ -160,5 +164,22 @@ export class AuthService {
     });
 
     return { message: "reset password success" };
+  };
+
+  getUser = async (id: string) => {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+      },
+      include: {
+        triggeredRewards: true,
+        receivedRewards: true,
+      },
+    });
+    if (!user) throw new ApiError("user not found", 404);
+    return {
+      message: "user fetched successfully",
+      data: user,
+    };
   };
 }

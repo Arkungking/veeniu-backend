@@ -42,6 +42,7 @@ export class AuthRouter {
       validateBody(ResetPasswordDTO),
       this.authController.resetPassword
     );
+    this.router.get("/:id", this.authController.getUser);
   };
 
   getRouter = () => {

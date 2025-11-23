@@ -29,4 +29,10 @@ export class AuthController {
     const result = await this.authService.resetPassword(body, authUserId);
     res.status(200).send(result);
   };
+
+  getUser = async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const result = await this.authService.getUser(id);
+    res.status(200).send(result);
+  }
 }

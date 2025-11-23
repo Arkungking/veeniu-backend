@@ -40,7 +40,7 @@ export class OrgEventController {
     res.status(200).send(result);
   };
   deleteEvent = async (req: Request, res: Response) => {
-    const id = req.body;
+    const id = req.params.id;
     const result = await this.orgEventService.deleteEvent(id);
     res.status(200).send(result);
   };

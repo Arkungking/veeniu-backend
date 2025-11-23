@@ -66,7 +66,12 @@ export class EventRouter {
       validateBody(EditEventDTO),
       this.orgEventController.editEvent
     );
-    this.router.delete("/delete", this.orgEventController.deleteEvent);
+    this.router.delete(
+      "/delete/:id",
+      this.jwtMiddleware.verifyToken(JWT_SECRET!),
+      this.jwtMiddleware.verifyRole(["ORGANIZER"]),
+      this.orgEventController.deleteEvent
+    );
   };
 
   getRouter = () => {
