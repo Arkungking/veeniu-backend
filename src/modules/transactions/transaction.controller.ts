@@ -9,6 +9,16 @@ export class TransactionController {
     this.transactionService = new TransactionService();
   }
 
+  getTransaction = async (req: Request, res: Response) => {
+    const transactionId = req.params.transactionId;
+    const authUserId = String(res.locals.user.id);
+    const result = await this.transactionService.getTransaction(
+      transactionId,
+      authUserId
+    );
+    res.status(200).send(result);
+  };
+
   getUserTransactions = async (req: Request, res: Response) => {
     const userId = req.params.userId;
     const authUserId = String(res.locals.user.id);
@@ -21,6 +31,36 @@ export class TransactionController {
       page,
       limit,
       search
+    );
+    res.status(200).send(result);
+  };
+
+  getOrgTransactions = async (req: Request, res: Response) => {
+    const orgId = req.params.orgId;
+    const authOrgId = String(res.locals.user.id);
+    const page = +(req.query.page || 1);
+    const limit = +(req.query.limit || 10);
+    const search = req.query.search as string;
+    const result = await this.transactionService.getOrgTransactions(
+      orgId,
+      authOrgId,
+      page,
+      limit,
+      search
+    );
+    res.status(200).send(result);
+  };
+
+  getUserTickets = async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const authUserId = String(res.locals.user.id);
+    const page = +(req.query.page || 1);
+    const limit = +(req.query.limit || 10);
+    const result = await this.transactionService.getUserTickets(
+      userId,
+      authUserId,
+      page,
+      limit
     );
     res.status(200).send(result);
   };
@@ -45,6 +85,18 @@ export class TransactionController {
     const result = await this.transactionService.uploadPaymentProof(
       uuid,
       paymentProof,
+      authUserId
+    );
+    res.status(200).send(result);
+  };
+
+  setTransactionStatus = async (req: Request, res: Response) => {
+    const uuid = req.params.uuid;
+    const body = req.body;
+    const authUserId = String(res.locals.user.id);
+    const result = await this.transactionService.setTransactionStatus(
+      uuid,
+      body,
       authUserId
     );
     res.status(200).send(result);

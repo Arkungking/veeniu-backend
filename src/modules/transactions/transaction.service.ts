@@ -4,6 +4,7 @@ import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateTransactionDTO } from "./dto/create-transaction.dto";
+import { SetTransactionStatusDTO } from "./dto/set-transaction-status.dto";
 import { TransactionQueue } from "./transaction.queue";
 
 export class TransactionService {
@@ -18,6 +19,184 @@ export class TransactionService {
     this.transactionQueue = new TransactionQueue();
     this.cloudinaryService = new CloudinaryService();
   }
+
+  getTransaction = async (transactionId: string, authUserId: string) => {
+    const transaction = await this.prisma.transaction.findFirst({
+      where: { uuid: transactionId },
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            location: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        transactionDetails: {
+          select: {
+            ticket: true,
+          },
+        },
+      },
+    });
+
+    if (!transaction) throw new ApiError("Transaction not found", 404);
+
+    if (authUserId !== transaction.userId)
+      throw new ApiError(
+        "You are not authorized to view this transaction",
+        403
+      );
+
+    return {
+      message: "Transaction fetched successfully",
+      data: transaction,
+    };
+  };
+
+  getUserTickets = async (
+    userId: string,
+    authUserId: string,
+    page = 1,
+    limit = 10
+  ) => {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) throw new ApiError("User not found", 404);
+    if (authUserId !== userId)
+      throw new ApiError(
+        "You are not authorized to view this user's transactions",
+        403
+      );
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      userId,
+      status: "DONE",
+    };
+
+    const transactions = await this.prisma.transaction.findMany({
+      skip,
+      take: limit,
+      where,
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            location: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        transactionDetails: {
+          select: {
+            ticket: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const total = await this.prisma.transaction.count({ where: { userId } });
+
+    return {
+      message: "User tickets fetched successfully",
+      data: transactions,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  };
+
+  getOrgTransactions = async (
+    userId: string,
+    authUserId: string,
+    page = 1,
+    limit = 10,
+    search?: string
+  ) => {
+    const organizer = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!organizer) throw new ApiError("Organizer not found", 404);
+
+    if (authUserId !== userId)
+      throw new ApiError(
+        "You are not authorized to view this organizer's transactions",
+        403
+      );
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      event: {
+        organizerId: userId,
+      },
+    };
+
+    if (search) {
+      where.event.title = { contains: search, mode: "insensitive" };
+    }
+
+    const transactions = await this.prisma.transaction.findMany({
+      skip,
+      take: limit,
+      where,
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            location: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        transactionDetails: {
+          select: {
+            ticket: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const total = await this.prisma.transaction.count({
+      where,
+    });
+
+    return {
+      message: "Organizer transactions fetched successfully",
+      data: transactions,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  };
 
   getUserTransactions = async (
     userId: string,
@@ -50,9 +229,18 @@ export class TransactionService {
         }),
       },
       include: {
-        event: true,
+        event: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            location: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
         transactionDetails: {
-          include: {
+          select: {
             ticket: true,
           },
         },
@@ -118,20 +306,25 @@ export class TransactionService {
     let discountAmount = 0;
     // 1. voucher
     if (body.voucherId) {
-      const voucher = await this.prisma.voucher.findUnique({ where: { id: body.voucherId }});
+      const voucher = await this.prisma.voucher.findUnique({
+        where: { id: body.voucherId },
+      });
       if (!voucher) throw new ApiError("invalid voucher", 400);
-      if (voucher.eventId !== eventId) throw new ApiError("voucher not valid for this event", 400);
-      if (voucher.expiresAt < new Date()) throw new ApiError("voucher expired", 400);
+      if (voucher.eventId !== eventId)
+        throw new ApiError("voucher not valid for this event", 400);
+      if (voucher.expiresAt < new Date())
+        throw new ApiError("voucher expired", 400);
       discountAmount += voucher.value;
     }
     // 2. points
     if (body.usePoints && body.usePoints > 0) {
       const userPointsSum = await this.prisma.reward.aggregate({
         where: { userId: authUserId, point: { gt: 0 } },
-        _sum: { point: true }
+        _sum: { point: true },
       });
       const available = userPointsSum._sum.point ?? 0;
-      if (body.usePoints > available) throw new ApiError("not enough points", 400);
+      if (body.usePoints > available)
+        throw new ApiError("not enough points", 400);
       discountAmount += body.usePoints; // 1 point = 1 IDR
     }
 
@@ -168,7 +361,6 @@ export class TransactionService {
         data: transactionDetails,
       });
 
-
       // 6. decrement stock for each ticket
       for (const item of payload) {
         await tx.ticket.update({
@@ -180,9 +372,14 @@ export class TransactionService {
       // if voucher used: mark voucher as used or create a relation.
       if (body.voucherId) {
         // simple: create a relation via Transaction.usedVoucherId
-        const voucher = await tx.voucher.findUnique({ where: { code: body.voucherId }});
+        const voucher = await tx.voucher.findUnique({
+          where: { code: body.voucherId },
+        });
         if (voucher) {
-          await tx.transaction.update({ where: { id: transaction.id }, data: { usedVoucherId: voucher.id }});
+          await tx.transaction.update({
+            where: { id: transaction.id },
+            data: { usedVoucherId: voucher.id },
+          });
         }
       }
 
@@ -193,8 +390,8 @@ export class TransactionService {
             userId: authUserId,
             point: -Math.abs(body.usePoints),
             triggeredById: authUserId,
-            createdAt: new Date()
-          }
+            createdAt: new Date(),
+          },
         });
         // alternatively decrement aggregated pointBalance
       }
@@ -275,6 +472,43 @@ export class TransactionService {
     return { message: "upload payment proof success" };
   };
 
+  setTransactionStatus = async (
+    uuid: string,
+    body: { status: TransactionStatus },
+    authUserId: string
+  ) => {
+    const transaction = await this.prisma.transaction.findFirst({
+      where: { uuid },
+      include: {
+        event: true,
+      },
+    });
+
+    if (!transaction) throw new ApiError("Transaction not found", 404);
+
+    if (transaction.event.organizerId !== authUserId) {
+      throw new ApiError(
+        "Forbidden: You are not the organizer of this event",
+        403
+      );
+    }
+
+    const result = await this.prisma.transaction.update({
+      where: { uuid },
+      data: {
+        status: body.status,
+        confirmedAt:
+          body.status === "DONE" ? new Date() : transaction.confirmedAt,
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      message: `Transaction status updated to ${body.status}`,
+      data: result,
+    };
+  };
+
   acceptTransaction = async (uuid: string, organizerId: string) => {
     const transaction = await this.prisma.transaction.findFirst({
       where: { uuid },
@@ -289,15 +523,36 @@ export class TransactionService {
       throw new ApiError("Invalid transaction status", 400);
     }
 
-    await this.prisma.$transaction(async tx => {
-      await tx.transaction.update({ where: { id: transaction.id }, data: { status: "DONE", confirmedAt: new Date() }});
+    await this.prisma.$transaction(async (tx) => {
+      await tx.transaction.update({
+        where: { id: transaction.id },
+        data: { status: "DONE", confirmedAt: new Date() },
+      });
       // create or update attendee
-      const existing = await tx.eventAttendee.findFirst({ where: { eventId: transaction.eventId, userId: transaction.userId }});
-      const ticketCount = transaction.transactionDetails.reduce((s, d) => s + d.qty, 0);
+      const existing = await tx.eventAttendee.findFirst({
+        where: { eventId: transaction.eventId, userId: transaction.userId },
+      });
+      const ticketCount = transaction.transactionDetails.reduce(
+        (s, d) => s + d.qty,
+        0
+      );
       if (existing) {
-        await tx.eventAttendee.update({ where: { id: existing.id }, data: { ticketCount: { increment: ticketCount }, totalPaid: { increment: transaction.finalAmount } }});
+        await tx.eventAttendee.update({
+          where: { id: existing.id },
+          data: {
+            ticketCount: { increment: ticketCount },
+            totalPaid: { increment: transaction.finalAmount },
+          },
+        });
       } else {
-        await tx.eventAttendee.create({ data: { eventId: transaction.eventId, userId: transaction.userId, ticketCount, totalPaid: transaction.finalAmount }});
+        await tx.eventAttendee.create({
+          data: {
+            eventId: transaction.eventId,
+            userId: transaction.userId,
+            ticketCount,
+            totalPaid: transaction.finalAmount,
+          },
+        });
       }
     });
 
@@ -343,15 +598,21 @@ export class TransactionService {
 
       // rollback used points: create reward with positive points (optional)
       if (transaction.usedPoints && transaction.usedPoints > 0) {
-        await tx.reward.create({ data: { userId: transaction.userId, point: transaction.usedPoints, triggeredById: transaction.userId }});
+        await tx.reward.create({
+          data: {
+            userId: transaction.userId,
+            point: transaction.usedPoints,
+            triggeredById: transaction.userId,
+          },
+        });
       }
       // rollback voucher: if you reserved voucher mark as unused (depending how you implement)
       if (transaction.paymentProof) {
         await this.cloudinaryService.remove(transaction.paymentProof);
         await tx.transaction.update({
-    where: { id: transaction.id },
-    data: { paymentProof: null },
-  });
+          where: { id: transaction.id },
+          data: { paymentProof: null },
+        });
       }
     });
 
