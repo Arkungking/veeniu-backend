@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "prisma generate && tsc",
+    "build": "npx prisma generate && tsc",
     "start": "npm run build && node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
