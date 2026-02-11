@@ -1,4 +1,4 @@
-import { Prisma, TransactionStatus } from "../../generated/prisma";
+import { Prisma, TransactionStatus } from "@prisma/client";
 import { ApiError } from "../../utils/api-error";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { MailService } from "../mail/mail.service";
@@ -280,7 +280,7 @@ export class TransactionService {
 
     // 3. validate tickets availability
     for (const item of payload) {
-      const ticket = tickets.find((ticket) => ticket.id === item.ticketId);
+      const ticket = tickets.find((ticket: any) => ticket.id === item.ticketId);
 
       if (!ticket) {
         throw new ApiError(`ticket with id ${item.ticketId} not found`, 400);
@@ -292,13 +292,13 @@ export class TransactionService {
     }
     // make sure all ticket belong to the same event
     const eventId = tickets[0].eventId;
-    const allSameEvent = tickets.every((t) => t.eventId === eventId);
+    const allSameEvent = tickets.every((t: any) => t.eventId === eventId);
     if (!allSameEvent)
       throw new ApiError("All tickets must belong to the same event", 400);
 
     // sum total & ticket expiration
     const totalAmount = payload.reduce((sum, item) => {
-      const ticket = tickets.find((t) => t.id === item.ticketId)!;
+      const ticket = tickets.find((t: any) => t.id === item.ticketId)!;
       return sum + ticket.price * item.qty;
     }, 0);
 
@@ -332,7 +332,7 @@ export class TransactionService {
 
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); //2 hour expr
 
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx: any) => {
       // 4. create data transaction
       const transaction = await tx.transaction.create({
         data: {
@@ -347,7 +347,7 @@ export class TransactionService {
 
       // 5. create data transaction detail
       const transactionDetails = payload.map((item) => {
-        const ticket = tickets.find((ticket) => ticket.id === item.ticketId)!;
+        const ticket = tickets.find((ticket: any) => ticket.id === item.ticketId)!;
 
         return {
           transactionId: transaction.id,
@@ -523,7 +523,7 @@ export class TransactionService {
       throw new ApiError("Invalid transaction status", 400);
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       await tx.transaction.update({
         where: { id: transaction.id },
         data: { status: "DONE", confirmedAt: new Date() },
@@ -533,7 +533,7 @@ export class TransactionService {
         where: { eventId: transaction.eventId, userId: transaction.userId },
       });
       const ticketCount = transaction.transactionDetails.reduce(
-        (s, d) => s + d.qty,
+        (s: any, d: any) => s + d.qty,
         0
       );
       if (existing) {
@@ -578,7 +578,7 @@ export class TransactionService {
     }
 
     // 2. Run in atomic transaction
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       // update transaction status
       await tx.transaction.update({
         where: { id: transaction.id },

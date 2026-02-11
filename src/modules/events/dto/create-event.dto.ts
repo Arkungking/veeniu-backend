@@ -1,3 +1,4 @@
+import { Category, Location } from "@prisma/client";
 import {
   IsDateString,
   IsEnum,
@@ -6,7 +7,6 @@ import {
   IsString,
   Min,
 } from "class-validator";
-import { Category, Location } from "../../../generated/prisma";
 
 export class CreateEventDTO {
   @IsNotEmpty()

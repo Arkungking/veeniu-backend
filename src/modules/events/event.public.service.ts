@@ -1,4 +1,4 @@
-import { Category, Location, Prisma } from "../../generated/prisma";
+import { Category, Location, Prisma } from "@prisma/client";
 import { ApiError } from "../../utils/api-error";
 import { PrismaService } from "../prisma/prisma.service";
 import { RedisService } from "../redis/redis.service";
@@ -115,7 +115,7 @@ export class EventService {
     if (!allEvents) throw new ApiError("No events found", 404);
 
     const shuffled = allEvents.sort(() => Math.random() - 0.5);
-    const selectedIds = shuffled.slice(0, count).map((e) => e.id);
+    const selectedIds = shuffled.slice(0, count).map((e: any) => e.id);
 
     const randomEvents = await this.prisma.event.findMany({
       where: { id: { in: selectedIds } },

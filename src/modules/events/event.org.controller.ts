@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Category, Location } from "../../generated/prisma";
 import { OrgEventService } from "./event.org.service";
+import { Category, Location } from "@prisma/client";
 
 export class OrgEventController {
   private orgEventService: OrgEventService;

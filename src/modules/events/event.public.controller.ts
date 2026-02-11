@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { EventService } from "./event.public.service";
-import { Category, Location } from "../../generated/prisma";
+import { Category, Location } from "@prisma/client";
 
 export class EventController {
   private eventService: EventService;

@@ -1,4 +1,4 @@
-import { Category, Location, Prisma } from "../../generated/prisma";
+import { Category, Location, Prisma } from "@prisma/client";
 import { ApiError } from "../../utils/api-error";
 import { generateSlug } from "../../utils/generate-slug";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";

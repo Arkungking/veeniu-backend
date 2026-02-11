@@ -26,7 +26,7 @@ export class TransactionWorker {
     }
 
     if (transaction.status === "WAITING_FOR_PAYMENT") {
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.$transaction(async (tx: any) => {
         // update status jadi expired
         await tx.transaction.update({
           where: { uuid: uuid },

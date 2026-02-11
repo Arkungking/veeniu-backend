@@ -1,5 +1,5 @@
+import { TransactionStatus } from "@prisma/client";
 import { IsEnum, isNotEmpty, IsNotEmpty, IsUUID } from "class-validator";
-import { TransactionStatus } from "../../../generated/prisma";
 
 export class SetTransactionStatusDTO {
   @IsNotEmpty()
